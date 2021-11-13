@@ -1,16 +1,31 @@
 """Functions to help with applying functions recursively.
 """
-from typing import Callable
+from typing import Any, Callable, Generic, NewType, TypeVar
 from numbers import Number
-from numpy.typing import ArrayLike, NDArray
 
 import numpy as np
+
+try:
+    from numpy.typing import ArrayLike, NDArray
+except ImportError:
+    # back-compatibility for earlier versions of numpy
+    ArrayLike = NewType("ArrayLike", Any)
+    T = TypeVar('T') # pylint: disable=invalid-name
+    class NDArray(Generic[T]): # pylint: disable=missing-class-docstring
+        pass
+
+try:
+    from tqdm import tqdm
+    TQDM_IMPORT_ERR_MSG = None
+except ImportError as err:
+    TQDM_IMPORT_ERR_MSG = str(err)
 
 def recursion_count(
     x_0: ArrayLike,
     func: Callable[[Number], Number],
     threshold: Number,
-    max_it: int
+    max_it: int,
+    use_tqdm: bool = False
     ) -> NDArray[np.uint]:
     """Returns the number of recursive applications of `func` required to exceed `threshold`.
 
@@ -31,6 +46,8 @@ def recursion_count(
         max_it (int):
             The maximum number of iterations to apply before assuming sub-threshold convergence.
             Must be positive.
+        use_tqdm (bool):
+            Whether to use tqdm to display progress.
 
     Returns:
         NDArray[np.uint]:
@@ -41,6 +58,10 @@ def recursion_count(
     x_0 = np.asarray(x_0)
 
     it_nums = range(1, max_it+1)
+    if use_tqdm:
+        if TQDM_IMPORT_ERR_MSG is not None:
+            raise ImportError(TQDM_IMPORT_ERR_MSG)
+        it_nums = tqdm(it_nums)
 
     is_prev_div = np.zeros(x_0.shape, dtype=np.bool) # was there divergence in a previous iteration?
     is_diverged = np.zeros(x_0.shape, dtype=np.bool)
