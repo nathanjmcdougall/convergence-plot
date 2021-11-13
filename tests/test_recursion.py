@@ -7,7 +7,7 @@ from recursion import recursion_count
 
 
 def test_recursion_count_basic():
-    """A very simple case of using `recursion_count`"""
+    """A very simple case of using `recursion_count`."""
     x_0 = [[1, 2],[3, 4]]
     func = lambda x: x**2
     threshold = 100
@@ -21,9 +21,9 @@ def test_recursion_count_basic():
     assert np.allclose(count, [[max_it+1, 3],[3, 2]])
 
 
-def test_recursion_count_complex():
-    """A simple case of using `recursion_count` with complex numbers"""
-    x_0 = [[0.5, complex(1,0.5)],[complex(0.25, 0.25), complex(1/3, -5)]]
+def test_recursion_count_complex_numbers():
+    """A simple case of using `recursion_count` with complex numbers."""
+    x_0 = [[0.5, 1+0.5j],[0.25+0.25j, 1/3-5j]]
     func = lambda x: x**2 + 0.25
     threshold = 2
     max_it = 6
@@ -51,3 +51,28 @@ def test_recursion_count_complex():
 
     assert np.allclose(count, [[max_it+1, 2],[max_it+1, 1]])
 
+
+def test_recursion_count_max_it_edge_case():
+    """Test `recursion_count`, for the case where we diverge on the final iteration."""
+    x_0 = np.array([0.75, 1])
+    func = lambda x: x**2 + 0.25
+    threshold = func(func(x_0)) - 0.0001
+    max_it = 2
+    count = recursion_count(x_0, func, threshold, max_it)
+
+    assert np.allclose(count, [max_it, max_it])
+
+
+if __name__ == "__main__":
+    # A large test case for profiling purposes.
+    large_case_x_0 = np.random.random(10_000) * 2 + np.random.random(10_000) * 2j
+    large_case_func = lambda x: x**2 + 0.1
+    LARGE_CASE_THRESHOLD = 2
+    LARGE_CASE_MAX_IT = 100_000
+
+    large_case_count = recursion_count(
+        large_case_x_0,
+        large_case_func,
+        LARGE_CASE_THRESHOLD,
+        LARGE_CASE_MAX_IT
+        )

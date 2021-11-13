@@ -50,9 +50,6 @@ def recursion_count(
         x_n[~is_diverged] = func(x_n[~is_diverged])
         is_prev_div[~is_prev_div] = count[~is_prev_div] < it_num
         is_diverged[~is_prev_div] = np.abs(x_n[~is_prev_div]) > threshold
-        # if is_diverged.all(): TODO profile the function with & without this added
-        #     return count
-
         count[is_diverged & ~is_prev_div] = it_num
 
     return count
